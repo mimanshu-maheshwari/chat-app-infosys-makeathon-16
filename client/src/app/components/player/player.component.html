@@ -1,9 +1,8 @@
-<div class="container-fluid videos-wrapper">
+<div class="videos-wrapper">
 	<div class="local-video">
 		<app-video [is-local]="true"></app-video>
 	</div>
-	<div class="remote-videos row">
-		<app-video class="col-sm-12 col-md-6 col-lg-6" [is-local]="false"></app-video>
-		<app-video class="col-sm-12 col-md-6 col-lg-6" [is-local]="false"></app-video>
+	<div class="remote-videos row p-2">
+		<app-video class="col" [is-local]="false"></app-video>
 	</div>
 </div>
