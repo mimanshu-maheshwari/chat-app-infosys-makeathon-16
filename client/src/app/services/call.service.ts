@@ -9,11 +9,18 @@ import { sortAndDeduplicateDiagnostics } from 'typescript';
 	providedIn: 'root'
 })
 export class CallService {
-	audioStream!: MediaStream;
-	videoStream!: MediaStream;
-	peerConnection!: RTCPeerConnection;
-	remoteTracksSubject: Subject<{ tracks: Array<MediaStreamTrack> }> = new Subject();
-	servers: RTCConfiguration = {
+	private audioStream!: MediaStream;
+	private videoStream!: MediaStream;
+
+	public localAudioStreamSubject: Subject<MediaStream> = new Subject();
+	public localVideoStreamSubject: Subject<MediaStream> = new Subject();
+
+	private peerConnection!: RTCPeerConnection;
+
+	public remoteTracksSubject: Subject<{ tracks: Array<MediaStreamTrack> }> = new Subject();
+
+	// TODO: create stun server
+	private servers: RTCConfiguration = {
 		iceServers: [
 			{
 				urls: [
@@ -27,19 +34,30 @@ export class CallService {
 		]
 	};
 
-	public set localAudioStream(stream: MediaStream) {
-		this.audioStream = stream;
-	}
-	public set localVideoStream(stream: MediaStream) {
-		this.videoStream = stream;
-	}
-
 	constructor(private signalingService: SignalingService) {
 		this.signalingService.handleMessage(this.handleSSMsg);
+		this.localAudioStreamSubject.subscribe({
+			next: (stream) => {
+				this.audioStream = stream;
+			}
+		});
+		this.localVideoStreamSubject.subscribe({
+			next: (stream) => {
+				this.videoStream = stream;
+			}
+		});
 	}
 
+	// instead of initCall when the second user joined then create the offer
 	public initCall() {
 		this.createOffer();
+	}
+
+	private handleUserJoined() {
+		this.createOffer();
+	}
+	private handleUserLeft() {
+		this.remoteTracksSubject.next({ tracks: [] });
 	}
 
 	private async createOffer() {
@@ -51,12 +69,19 @@ export class CallService {
 		this.signalingService.sendMessage({ type: SocketEvents.OFFER, offer });
 	}
 
-	private async createAnswer(offer: RTCSessionDescriptionInit) {
-		this.createPeerConnection();
-		await this.peerConnection.setRemoteDescription(offer);
-		const answer = await this.peerConnection.createAnswer();
-		this.peerConnection.setLocalDescription(answer);
-		this.signalingService.sendMessage({ type: SocketEvents.ANSWER, answer: answer });
+	/**
+	 *
+	 * @param offer
+	 * will create a answer and send it via socket
+	 */
+	private async handleOffer(offer: RTCSessionDescriptionInit) {
+		if (this.audioStream && this.videoStream) {
+			this.createPeerConnection();
+			await this.peerConnection.setRemoteDescription(offer);
+			const answer = await this.peerConnection.createAnswer();
+			this.peerConnection.setLocalDescription(answer);
+			this.signalingService.sendMessage({ type: SocketEvents.ANSWER, answer: answer });
+		}
 	}
 
 	private handleAnswer(answer: RTCSessionDescriptionInit) {
@@ -108,7 +133,7 @@ export class CallService {
 		if (event) {
 			try {
 				const data: ISocketEvent = JSON.parse(event.data);
-				console.debug('Parsed data: ', data);
+				// console.debug('Parsed data: ', data);
 				switch (data.type) {
 					case SocketEvents.CANDIDATE:
 						console.debug('candidate event: ', data.iceCandidate);
@@ -119,7 +144,7 @@ export class CallService {
 					case SocketEvents.OFFER:
 						console.debug('offer event: ', data.offer);
 						if (data.offer) {
-							this.createAnswer(data.offer as RTCSessionDescriptionInit);
+							this.handleOffer(data.offer as RTCSessionDescriptionInit);
 						}
 						break;
 					case SocketEvents.ANSWER:
@@ -127,6 +152,14 @@ export class CallService {
 						if (data.answer) {
 							this.handleAnswer(data.answer as RTCSessionDescriptionInit);
 						}
+						break;
+					case SocketEvents.USER_JOINED:
+						console.debug('user joined event: ', data);
+						this.handleUserJoined();
+						break;
+					case SocketEvents.USER_LEFT:
+						console.debug('user left event: ', data);
+						this.handleUserLeft();
 						break;
 					default:
 						break;

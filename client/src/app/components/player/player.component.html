@@ -1,10 +1,11 @@
 <div class="videos-wrapper">
 	<div class="local-video">
-		<app-video
+		<app-video [is-local]="true"></app-video>
+	</div>
+	<!--
 			(send-local-audio-stream)="handleLocalAudioStream($event)"
 			(send-local-video-stream)="handleLocalVideoStream($event)"
-			[is-local]="true"></app-video>
-	</div>
+	-->
 	<div class="remote-videos row p-2">
 		<app-video class="col" [is-local]="false"></app-video>
 	</div>

@@ -24,14 +24,31 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 	@ViewChild('videoEl') videoEl!: ElementRef<HTMLVideoElement>;
 	@ViewChild('audioEl') audioEl!: ElementRef<HTMLAudioElement>;
 	@Input('is-local') isLocal: boolean = false;
-	@Output('send-local-video-stream') sendLocalVideoStream: EventEmitter<MediaStream> = new EventEmitter<MediaStream>();
-	@Output('send-local-audio-stream') sendLocalAudioStream: EventEmitter<MediaStream> = new EventEmitter<MediaStream>();
+	// @Output('send-local-video-stream') sendLocalVideoStream: EventEmitter<MediaStream> = new EventEmitter<MediaStream>();
+	// @Output('send-local-audio-stream') sendLocalAudioStream: EventEmitter<MediaStream> = new EventEmitter<MediaStream>();
 	videoSourceObject: MediaStream | null = null;
 	audioSourceObject: MediaStream | null = null;
 	unsubscribeAll: Subject<void>;
 
 	constructor(@Inject(PLATFORM_ID) private _platform: Object, private callService: CallService) {
 		this.unsubscribeAll = new Subject();
+
+		if (isPlatformBrowser(this._platform) && 'mediaDevices' in navigator) {
+			if (!this.videoSourceObject) {
+				navigator.mediaDevices.getUserMedia({ video: true }).then((value) => {
+					this.videoSourceObject = value;
+					this.callService.localVideoStreamSubject.next(this.videoSourceObject);
+					// this.sendLocalVideoStream.emit(this.videoSourceObject);
+				});
+			}
+			if (!this.audioSourceObject) {
+				navigator.mediaDevices.getUserMedia({ audio: true }).then((value) => {
+					this.audioSourceObject = value;
+					this.callService.localAudioStreamSubject.next(this.audioSourceObject);
+					// this.sendLocalAudioStream.emit(this.audioSourceObject);
+				});
+			}
+		}
 	}
 
 	ngAfterViewInit(): void {
@@ -41,7 +58,13 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 		} else {
 			this.callService.remoteTracks.pipe(takeUntil(this.unsubscribeAll)).subscribe({
 				next: ({ tracks }) => {
-					this.setForRemote(tracks);
+					if (tracks.length) {
+						this.setVideoForRemote(tracks);
+						this.setAudioForRemote(tracks);
+					} else {
+						this.pauseVideo();
+						this.pauseAudio();
+					}
 				},
 				error: (err) => {},
 				complete: () => {}
@@ -52,12 +75,13 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 	async setVideoForLocal() {
 		if (isPlatformBrowser(this._platform) && 'mediaDevices' in navigator) {
 			if (this.videoEl) {
-				this.videoSourceObject =
-					this.videoSourceObject == null
-						? await navigator.mediaDevices.getUserMedia({ video: true })
-						: this.videoSourceObject;
+				this.videoSourceObject = !this.videoSourceObject
+					? await navigator.mediaDevices.getUserMedia({ video: true })
+					: this.videoSourceObject;
 				this.videoEl.nativeElement.srcObject = this.videoSourceObject;
-				this.sendLocalVideoStream.emit(this.videoSourceObject);
+
+				this.callService.localVideoStreamSubject.next(this.videoSourceObject);
+				// this.sendLocalVideoStream.emit(this.videoSourceObject);
 			}
 		}
 	}
@@ -65,33 +89,49 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 	async setAudioForLocal() {
 		if (isPlatformBrowser(this._platform) && 'mediaDevices' in navigator) {
 			if (this.audioEl) {
-				this.audioSourceObject =
-					this.audioSourceObject == null
-						? await navigator.mediaDevices.getUserMedia({ audio: true })
-						: this.audioSourceObject;
+				this.audioSourceObject = !this.audioSourceObject
+					? await navigator.mediaDevices.getUserMedia({ audio: true })
+					: this.audioSourceObject;
 				this.audioEl.nativeElement.srcObject = this.audioSourceObject;
-				this.sendLocalAudioStream.emit(this.audioSourceObject);
+				this.callService.localAudioStreamSubject.next(this.audioSourceObject);
+				// this.sendLocalAudioStream.emit(this.audioSourceObject);
 			}
 		}
 	}
 
-	pauseVideoForLocal() {
+	pauseVideo() {
 		if (this.videoEl) {
 			this.videoEl.nativeElement.pause();
-			(this.videoEl.nativeElement.srcObject as MediaStream).getVideoTracks()[0].stop();
+			// (this.videoEl.nativeElement.srcObject as MediaStream).getVideoTracks()[0].stop();
 			this.videoEl.nativeElement.srcObject = null;
+			if (!this.isLocal) {
+				this.videoSourceObject = null;
+			}
 		}
 	}
 
-	pauseAudioForLocal() {
+	pauseAudio() {
 		if (this.audioEl) {
 			this.audioEl.nativeElement.pause();
-			(this.audioEl.nativeElement.srcObject as MediaStream).getAudioTracks()[0].stop();
+			// (this.audioEl.nativeElement.srcObject as MediaStream).getAudioTracks()[0].stop();
 			this.audioEl.nativeElement.srcObject = null;
+			if (!this.isLocal) {
+				this.audioSourceObject = null;
+			}
 		}
 	}
 
-	setForRemote(tracks: MediaStreamTrack[]) {
+	setAudioForRemote(tracks: MediaStreamTrack[]) {
+		if (this.audioEl) {
+			this.audioSourceObject = new MediaStream();
+			tracks.forEach((track) => {
+				this.audioSourceObject?.addTrack(track);
+			});
+			this.audioEl.nativeElement.srcObject = this.audioSourceObject;
+		}
+	}
+
+	setVideoForRemote(tracks: MediaStreamTrack[]) {
 		if (this.videoEl) {
 			this.videoSourceObject = new MediaStream();
 			tracks.forEach((track) => {
@@ -105,7 +145,7 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 		if (value) {
 			this.setVideoForLocal();
 		} else {
-			this.pauseVideoForLocal();
+			this.pauseVideo();
 		}
 	}
 
@@ -113,7 +153,7 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 		if (value) {
 			this.setAudioForLocal();
 		} else {
-			this.pauseAudioForLocal();
+			this.pauseAudio();
 		}
 	}
 

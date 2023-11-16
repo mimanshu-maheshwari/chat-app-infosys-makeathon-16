@@ -7,29 +7,34 @@ import { CallService } from 'src/app/services/call.service';
 	styleUrls: ['./player.component.scss']
 })
 export class PlayerComponent implements OnInit {
-	localAudioStream!: MediaStream | null;
-	localVideoStream!: MediaStream | null;
+	localAudioStream!: MediaStream;
+	localVideoStream!: MediaStream;
 
 	constructor(private callService: CallService) {}
 
-	ngOnInit(): void {}
+	ngOnInit(): void {
+		this.callService.localAudioStreamSubject.subscribe({
+			next: (stream) => (this.localAudioStream = stream)
+		});
+		this.callService.localVideoStreamSubject.subscribe({
+			next: (stream) => (this.localVideoStream = stream)
+		});
+	}
 	initCall() {
 		if (this.localVideoStream && this.localAudioStream) {
-			this.callService.localAudioStream = this.localAudioStream;
-			this.callService.localVideoStream = this.localVideoStream;
 			this.callService.initCall();
 		}
 	}
 
-	handleLocalVideoStream(event: MediaStream) {
-		this.localVideoStream = event;
-		this.callService.localVideoStream = this.localVideoStream;
-	}
+	// handleLocalVideoStream(event: MediaStream) {
+	// 	this.localVideoStream = event;
+	// 	this.callService.localVideoStream = this.localVideoStream;
+	// }
 
-	handleLocalAudioStream(event: MediaStream) {
-		this.localAudioStream = event;
-		this.callService.localAudioStream = this.localAudioStream;
-	}
+	// handleLocalAudioStream(event: MediaStream) {
+	// 	this.localAudioStream = event;
+	// 	this.callService.localAudioStream = this.localAudioStream;
+	// }
 
 	get initButtonTitle(): string {
 		let message = 'Initiate call';
