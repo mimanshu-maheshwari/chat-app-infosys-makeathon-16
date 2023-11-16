@@ -1,8 +1,8 @@
-<p>controls works!</p>
-<div class="container-fluid">
-	<div class="controls-wrapper">
-		<div class="control"></div>
-		<div class="control"></div>
-		<div class="control"></div>
+<div class="controls-wrapper">
+	<div class="control video" [class]="videoState ? 'enable' : 'disable'" (click)="toggleVideo()">
+		<fa-icon [icon]="videoIcon"></fa-icon>
+	</div>
+	<div class="control mic" [class]="micState ? 'enable' : 'disable'" (click)="toggleMic()">
+		<fa-icon [icon]="micIcon"></fa-icon>
 	</div>
 </div>

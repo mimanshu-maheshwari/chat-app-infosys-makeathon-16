@@ -1,5 +1,8 @@
-<div class="container-fluid">
-	<div class="video-wrapper">
-		<video class="video-el" #videoEl autoplay playsInline></video>
-	</div>
+<div class="video-wrapper">
+	<video class="video-el" [class]="isLocal ? 'local' : 'remote'" #videoEl autoplay playsInline></video>
+	<app-controls
+		*ngIf="isLocal"
+		class="controls"
+		(mic-toggle-emmiter)="handleMicToggle($event)"
+		(video-toggle-emmiter)="handleVideoToggle($event)"></app-controls>
 </div>

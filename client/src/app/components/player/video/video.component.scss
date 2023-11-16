@@ -1,3 +1,20 @@
-.video-el {
+.video-el.local {
 	background-color: black;
+	width: 20em;
+	height: 15em;
+	border-radius: 0.6em;
+}
+.video-el.remote {
+	background-color: black;
+	width: 100%;
+	border-radius: 0.6em;
+}
+.video-wrapper {
+	position: relative;
+}
+.controls {
+	position: absolute;
+	bottom: 1em;
+	left: 50%;
+	transform: translateX(-50%);
 }

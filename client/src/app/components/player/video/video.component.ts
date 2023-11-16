@@ -41,6 +41,14 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 			}
 		}
 	}
+	pauseForLocal() {
+		if (this.videoEl) {
+			this.videoEl.nativeElement.pause();
+			(this.videoEl.nativeElement.srcObject as MediaStream).getVideoTracks()[0].stop();
+			this.videoEl.nativeElement.srcObject = null;
+			this.videoSourceObject = null;
+		}
+	}
 
 	setForRemote() {
 		if (this.videoEl) {
@@ -48,6 +56,15 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 			this.videoEl.nativeElement.srcObject = this.videoSourceObject;
 		}
 	}
+
+	handleVideoToggle(value: boolean) {
+		if (value) {
+			this.setForLocal();
+		} else {
+			this.pauseForLocal();
+		}
+	}
+	handleMicToggle(value: boolean) {}
 
 	ngOnDestroy(): void {
 		this.videoSourceObject = null;

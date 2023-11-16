@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -12,6 +12,7 @@ import { CallService } from './services/call.service';
 import { PlayerComponent } from './components/player/player.component';
 import { VideoComponent } from './components/player/video/video.component';
 import { ControlsComponent } from './components/player/controls/controls.component';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 @NgModule({
 	declarations: [AppComponent, PlayerComponent, VideoComponent, ControlsComponent],
@@ -22,9 +23,11 @@ import { ControlsComponent } from './components/player/controls/controls.compone
 		AppRoutingModule,
 		BrowserAnimationsModule,
 		NgbModule,
+		FontAwesomeModule,
 		HttpClientModule
 	],
 	providers: [SignalingService, CallService],
-	bootstrap: [AppComponent]
+	bootstrap: [AppComponent],
+	schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class AppModule {}
