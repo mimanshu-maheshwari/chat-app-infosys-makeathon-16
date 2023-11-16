@@ -1,6 +1,17 @@
 # chat-app-infosys-makeathon-16
 
-# References: 
+## TODO: 
+* Use STOMP instead of WebSocket so that we can create rooms. 
+* Handle multiple users using those rooms.
+* Handle mic and camera controls.
+* Style Page.
+* Create the stun server.
+* Use the above stun server.
+* Add language selection functionality to web page(maybe use auto location also).
+* Send language details to stun server.
+* Connect the conversion functionality to stun server. 
+
+## References: 
 - https://padymies.medium.com/video-chats-with-angular-and-webrtc-3f892dd0acd6
 - https://www.baeldung.com/webrtc
 - https://dzone.com/articles/webrtc-videocalls-with-angularspring-boot
