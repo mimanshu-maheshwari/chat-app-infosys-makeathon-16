@@ -6,7 +6,7 @@ import { Subject } from 'rxjs';
 })
 export class CallService {
 	peerConnection!: RTCPeerConnection;
-	remoteTracksSubject: Subject<Array<MediaStreamTrack>> = new Subject();
+	remoteTracksSubject: Subject<{ tracks: Array<MediaStreamTrack> }> = new Subject();
 	servers: RTCConfiguration = {
 		iceServers: [
 			{
@@ -27,9 +27,14 @@ export class CallService {
 	}
 
 	private async createOffer(audioStream: MediaStream, videoStream: MediaStream) {
+		// extract the tracks
 		const audioTrack: MediaStreamTrack = audioStream.getAudioTracks()[0];
 		const videoTrack: MediaStreamTrack = videoStream.getVideoTracks()[0];
+
+		// create the peer connection
 		this.peerConnection = new RTCPeerConnection(this.servers);
+
+		// set tracks to peer connection
 		if (audioStream && audioTrack) {
 			console.debug('Adding audio track to peer connection: ', audioTrack);
 			this.peerConnection.addTrack(audioTrack, audioStream);
@@ -38,19 +43,30 @@ export class CallService {
 			console.debug('Adding video track to peer connection: ', videoTrack);
 			this.peerConnection.addTrack(videoTrack, videoStream);
 		}
+
+		// handle the tracks recieved on the connection
 		this.peerConnection.ontrack = (event) => {
-			this.remoteTracksSubject.next(event.streams[0].getTracks());
+			// sending the tracks to remote stream
+			this.remoteTracksSubject.next({ tracks: event.streams[0].getTracks() });
 		};
+
+		// create get ice candidates from stun server
 		this.peerConnection.onicecandidate = (event) => {
 			if (event.candidate) {
 				console.debug('New Ice Candidate: ', event.candidate);
 			}
 		};
+
+		// create the offer configuration and set it to local description as well
 		let offer: RTCLocalSessionDescriptionInit = await this.peerConnection.createOffer();
 		await this.peerConnection.setLocalDescription(offer);
 		console.debug('Offer: ', offer);
 	}
-	public get remoteTracks(): Subject<Array<MediaStreamTrack>> {
+
+	/**
+	 * return a subject of media stream tracks. so that when we get new track we can emit the data and add to remote streams
+	 */
+	public get remoteTracks(): Subject<{ tracks: Array<MediaStreamTrack> }> {
 		return this.remoteTracksSubject;
 	}
 }

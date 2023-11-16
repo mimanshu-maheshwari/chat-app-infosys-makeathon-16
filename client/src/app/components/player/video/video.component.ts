@@ -39,8 +39,8 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 			this.setForLocal();
 		} else {
 			this.callService.remoteTracks.pipe(takeUntil(this.unsubscribeAll)).subscribe({
-				next: (response: MediaStreamTrack[]) => {
-					this.setForRemote(response);
+				next: ({ tracks }) => {
+					this.setForRemote(tracks);
 				},
 				error: (err) => {},
 				complete: () => {}
