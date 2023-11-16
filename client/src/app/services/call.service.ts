@@ -1,81 +1,56 @@
-import { ElementRef, Injectable } from '@angular/core';
-import { SignalingService } from './signaling.service';
+import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root',
+	providedIn: 'root'
 })
 export class CallService {
-  // connection: any;
-  // configuration: RTCConfiguration = {
-  //   iceServers: [
-  //     {
-  //       urls: [
-  //         'stun:stun1.l.google.com:19302',
-  //         'stun:stun2.l.google.com:19302',
-  //       ],
-  //     },
-  //   ],
-  //   iceCandidatePoolSize: 10,
-  // };
-  // constructor(private signalingService: SignalingService) {}
-  // private async _initConnection(remoteVideo: ElementRef): Promise<void> {
-  //   this.connection = new RTCPeerConnection(this.configuration);
-  //   await this._getStreams(remoteVideo);
-  //   this._registerConnectionListeners();
-  // }
-  // _registerConnectionListeners() {
-  //   this.connection.onicecandidate = (event: any) => {
-  //     if (event.candidate) {
-  //       const payload = {
-  //         type: 'candidate',
-  //         candidate: event.candidate.toJSON(),
-  //       };
-  //       this.signalingService.sendMessage(payload);
-  //     }
-  //   };
-  // }
-  // private async _getStreams(remoteVideo: ElementRef): Promise<void> {
-  //   const stream = await navigator.mediaDevices.getUserMedia({
-  //     video: true,
-  //     audio: true,
-  //   });
-  //   const remoteStream = new MediaStream();
-  //   remoteVideo.nativeElement.srcObject = remoteStream;
-  //   this.connection.ontrack = (event: any) => {
-  //     event.streams[0].getTracks().forEach((track: any) => {
-  //       remoteStream.addTrack(track);
-  //     });
-  //   };
-  //   stream.getTracks().forEach((track) => {
-  //     this.connection.addTrack(track, stream);
-  //   });
-  // }
-  // public async handleCandidate(candidate: RTCIceCandidate): Promise<void> {
-  //   if (candidate) {
-  //     await this.connection.addIceCandidate(new RTCIceCandidate(candidate));
-  //   }
-  // }
-  // public async handleAnswer(answer: RTCSessionDescription): Promise<void> {
-  //   await this.connection.setRemoteDescription(
-  //     new RTCSessionDescription(answer)
-  //   );
-  // }
-  // public async makeCall(remoteVideo: ElementRef): Promise<void> {
-  //   await this._initConnection(remoteVideo);
-  //   const offer = await this.connection.createOffer();
-  //   await this.connection.setLocalDescription(offer);
-  //   this.signalingService.sendMessage({ type: 'offer', offer });
-  // }
-  // public async handleOffer(
-  //   offer: RTCSessionDescription,
-  //   remoteVideo: ElementRef
-  // ): Promise<void> {
-  //   await this._initConnection(remoteVideo);
-  //   await this.connection.setRemoteDescription(
-  //     new RTCSessionDescription(offer)
-  //   );
-  //   const answer = await this.connection.createAnswer();
-  //   await this.connection.setLocalDescription(answer);
-  //   this.signalingService.sendMessage({ type: 'answer', answer });
-  // }
+	peerConnection!: RTCPeerConnection;
+	remoteTracksSubject: Subject<Array<MediaStreamTrack>> = new Subject();
+	servers: RTCConfiguration = {
+		iceServers: [
+			{
+				urls: [
+					'stun:stun.l.google.com:19302',
+					'stun:stun1.l.google.com:19302',
+					'stun:stun2.l.google.com:19302',
+					'stun:stun3.l.google.com:19302',
+					'stun:stun4.l.google.com:19302'
+				]
+			}
+		]
+	};
+	constructor() {}
+
+	public initCall(audioStream: MediaStream, videoStream: MediaStream) {
+		this.createOffer(audioStream, videoStream);
+	}
+
+	private async createOffer(audioStream: MediaStream, videoStream: MediaStream) {
+		const audioTrack: MediaStreamTrack = audioStream.getAudioTracks()[0];
+		const videoTrack: MediaStreamTrack = videoStream.getVideoTracks()[0];
+		this.peerConnection = new RTCPeerConnection(this.servers);
+		if (audioStream && audioTrack) {
+			console.debug('Adding audio track to peer connection: ', audioTrack);
+			this.peerConnection.addTrack(audioTrack, audioStream);
+		}
+		if (videoStream && videoTrack) {
+			console.debug('Adding video track to peer connection: ', videoTrack);
+			this.peerConnection.addTrack(videoTrack, videoStream);
+		}
+		this.peerConnection.ontrack = (event) => {
+			this.remoteTracksSubject.next(event.streams[0].getTracks());
+		};
+		this.peerConnection.onicecandidate = (event) => {
+			if (event.candidate) {
+				console.debug('New Ice Candidate: ', event.candidate);
+			}
+		};
+		let offer: RTCLocalSessionDescriptionInit = await this.peerConnection.createOffer();
+		await this.peerConnection.setLocalDescription(offer);
+		console.debug('Offer: ', offer);
+	}
+	public get remoteTracks(): Subject<Array<MediaStreamTrack>> {
+		return this.remoteTracksSubject;
+	}
 }
