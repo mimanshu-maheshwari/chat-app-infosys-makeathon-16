@@ -9,4 +9,8 @@
 		<app-video class="col" [is-local]="false"></app-video>
 	</div>
 </div>
-<button class="btn btn-primary" (click)="initCall()">Init Call</button>
+<div [title]="initButtonTitle">
+	<button class="btn btn-primary" [disabled]="!localAudioStream || !localVideoStream" (click)="initCall()">
+		Init Call
+	</button>
+</div>

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
+import { SignalingService } from './signaling.service';
 
 @Injectable({
 	providedIn: 'root'
@@ -20,7 +21,7 @@ export class CallService {
 			}
 		]
 	};
-	constructor() {}
+	constructor(private signalingService: SignalingService) {}
 
 	public initCall(audioStream: MediaStream, videoStream: MediaStream) {
 		this.createOffer(audioStream, videoStream);
@@ -54,6 +55,7 @@ export class CallService {
 		this.peerConnection.onicecandidate = (event) => {
 			if (event.candidate) {
 				console.debug('New Ice Candidate: ', event.candidate);
+				this.signalingService.sendMessage(JSON.stringify(event.candidate));
 			}
 		};
 
@@ -61,10 +63,12 @@ export class CallService {
 		let offer: RTCLocalSessionDescriptionInit = await this.peerConnection.createOffer();
 		await this.peerConnection.setLocalDescription(offer);
 		console.debug('Offer: ', offer);
+		this.signalingService.sendMessage(JSON.stringify(offer));
 	}
 
 	/**
-	 * return a subject of media stream tracks. so that when we get new track we can emit the data and add to remote streams
+	 * return a subject of media stream tracks.
+	 * So that when we get new track we can emit the data and add to remote streams
 	 */
 	public get remoteTracks(): Subject<{ tracks: Array<MediaStreamTrack> }> {
 		return this.remoteTracksSubject;
