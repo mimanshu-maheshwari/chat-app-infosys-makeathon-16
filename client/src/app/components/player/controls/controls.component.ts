@@ -10,7 +10,7 @@ export class ControlsComponent implements OnInit {
 	@Output('mic-toggle-emmiter') micToggleEmitter: EventEmitter<boolean> = new EventEmitter<boolean>();
 	@Output('video-toggle-emmiter') videoToggleEmitter: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-	micState: boolean = false;
+	micState: boolean = true;
 	videoState: boolean = true;
 
 	videoIcon = this.videoState ? faVideo : faVideoSlash;

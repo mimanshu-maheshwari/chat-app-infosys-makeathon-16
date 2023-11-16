@@ -1,5 +1,6 @@
 <div class="video-wrapper">
 	<video class="video-el" [class]="isLocal ? 'local' : 'remote'" #videoEl autoplay playsInline></video>
+	<audio controls class="audio-el" #audioEl autoPlay playsinline></audio>
 	<app-controls
 		*ngIf="isLocal"
 		class="controls"
