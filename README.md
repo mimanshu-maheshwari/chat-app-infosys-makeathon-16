@@ -8,4 +8,5 @@
 - https://github.com/AnHyeontaek/WebRTC-SpringBoot
 - https://www.youtube.com/watch?v=QsH8FL0952k
 - https://youtube.com/playlist?list=PLayYqdnyegt0qX8EfEGExxZF3DxkyA1Dj&si=C52W_JQVbDkRIkur
-
+- https://stackblitz.com/edit/angular-user-media-video?file=src%2Fapp%2Fapp.component.ts
+- https://gist.github.com/zziuni/3741933
