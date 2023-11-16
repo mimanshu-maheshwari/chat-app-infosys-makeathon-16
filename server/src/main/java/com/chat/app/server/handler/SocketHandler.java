@@ -23,16 +23,10 @@ public class SocketHandler extends AbstractWebSocketHandler {
     log.info("For session {} message received is: {}", session.getId(), message.getPayload());
     for (WebSocketSession webSocketSession : sessions) {
       if (webSocketSession.isOpen() && !session.getId().equals(webSocketSession.getId())) {
-        webSocketSession.sendMessage(new TextMessage(message.toString() + "from handle text"));
+        webSocketSession.sendMessage(message);
       }
     }
   }
-
-  @Override
-  public void handleBinaryMessage(WebSocketSession session, BinaryMessage message){
-    log.info("from session: {} binary Message received: {} ", session.getId(), message.getPayload());
-  }
-
 
   @Override
   public void afterConnectionEstablished(WebSocketSession session) throws Exception {

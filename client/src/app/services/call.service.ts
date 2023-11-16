@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { SignalingService } from './signaling.service';
+import { SocketEvents } from '../shared/socket-event.enum';
+import { ISocketEvent } from '../shared/socket-event.model';
 
 @Injectable({
 	providedIn: 'root'
@@ -21,7 +23,9 @@ export class CallService {
 			}
 		]
 	};
-	constructor(private signalingService: SignalingService) {}
+	constructor(private signalingService: SignalingService) {
+		this.signalingService.handleMessage(this.handleSSMsg);
+	}
 
 	public initCall(audioStream: MediaStream, videoStream: MediaStream) {
 		this.createOffer(audioStream, videoStream);
@@ -55,7 +59,7 @@ export class CallService {
 		this.peerConnection.onicecandidate = (event) => {
 			if (event.candidate) {
 				console.debug('New Ice Candidate: ', event.candidate);
-				this.signalingService.sendMessage(JSON.stringify(event.candidate));
+				this.signalingService.sendMessage({ type: SocketEvents.CANDIDATE, iceCandidate: event.candidate });
 			}
 		};
 
@@ -63,8 +67,33 @@ export class CallService {
 		let offer: RTCLocalSessionDescriptionInit = await this.peerConnection.createOffer();
 		await this.peerConnection.setLocalDescription(offer);
 		console.debug('Offer: ', offer);
-		this.signalingService.sendMessage(JSON.stringify(offer));
+		this.signalingService.sendMessage({ type: SocketEvents.OFFER, offer });
 	}
+
+	handleSSMsg = (event: MessageEvent) => {
+		console.debug('Event received from signaling server', event);
+		if (event) {
+			try {
+				const data: ISocketEvent = JSON.parse(event.data);
+				console.debug('Parsed data: ', data);
+				switch (data.type) {
+					case SocketEvents.CANDIDATE:
+						console.debug('candidate event: ', data.iceCandidate);
+						break;
+					case SocketEvents.OFFER:
+						console.debug('offer event: ', data.offer);
+						break;
+					case SocketEvents.ANSWER:
+						console.debug('answer event: ', data.answer);
+						break;
+					default:
+						break;
+				}
+			} catch (e) {
+				console.error("Error: Couldn't parse event data from signaling server");
+			}
+		}
+	};
 
 	/**
 	 * return a subject of media stream tracks.

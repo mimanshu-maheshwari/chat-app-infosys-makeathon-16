@@ -1,24 +1,24 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-// import { Socket } from 'ngx-socket-io';
-// import { Observable } from 'rxjs';
-import { webSocket } from 'rxjs/webSocket';
+import { ISocketEvent } from '../shared/socket-event.model';
 
 @Injectable({
 	providedIn: 'root'
 })
 export class SignalingService {
-	constructor(private http: HttpClient) {}
+	URL: string = 'ws://localhost:8080/socket';
+	signalingSocket: WebSocket;
 
-	messageWebSocketCon = webSocket('ws://localhost:8080/socket');
-
-	public sendMessage(message: string) {
-		this.messageWebSocketCon.next({ message: message });
+	constructor() {
+		this.signalingSocket = new WebSocket(this.URL);
 	}
 
-	public getReciever() {
-		return this.messageWebSocketCon;
+	public sendMessage(message: ISocketEvent) {
+		this.signalingSocket.send(JSON.stringify(message));
+		// this.messageWebSocketCon.next({ message: message });
 	}
 
-	public createRTCDataChannel() {}
+	public handleMessage(callback: (message: MessageEvent) => void) {
+		// return this.messageWebSocketCon;
+		this.signalingSocket.onmessage = callback;
+	}
 }
