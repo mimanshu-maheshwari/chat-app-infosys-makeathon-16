@@ -24,10 +24,8 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 	@ViewChild('videoEl') videoEl!: ElementRef<HTMLVideoElement>;
 	@ViewChild('audioEl') audioEl!: ElementRef<HTMLAudioElement>;
 	@Input('is-local') isLocal: boolean = false;
-	@Output('send-local-video-stream') sendLocalVideoStream: EventEmitter<MediaStream | null> =
-		new EventEmitter<MediaStream | null>();
-	@Output('send-local-audio-stream') sendLocalAudioStream: EventEmitter<MediaStream | null> =
-		new EventEmitter<MediaStream | null>();
+	@Output('send-local-video-stream') sendLocalVideoStream: EventEmitter<MediaStream> = new EventEmitter<MediaStream>();
+	@Output('send-local-audio-stream') sendLocalAudioStream: EventEmitter<MediaStream> = new EventEmitter<MediaStream>();
 	videoSourceObject: MediaStream | null = null;
 	audioSourceObject: MediaStream | null = null;
 	unsubscribeAll: Subject<void>;

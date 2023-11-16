@@ -3,11 +3,14 @@ import { Subject } from 'rxjs';
 import { SignalingService } from './signaling.service';
 import { SocketEvents } from '../shared/socket-event.enum';
 import { ISocketEvent } from '../shared/socket-event.model';
+import { sortAndDeduplicateDiagnostics } from 'typescript';
 
 @Injectable({
 	providedIn: 'root'
 })
 export class CallService {
+	audioStream!: MediaStream;
+	videoStream!: MediaStream;
 	peerConnection!: RTCPeerConnection;
 	remoteTracksSubject: Subject<{ tracks: Array<MediaStreamTrack> }> = new Subject();
 	servers: RTCConfiguration = {
@@ -23,30 +26,66 @@ export class CallService {
 			}
 		]
 	};
+
+	public set localAudioStream(stream: MediaStream) {
+		this.audioStream = stream;
+	}
+	public set localVideoStream(stream: MediaStream) {
+		this.videoStream = stream;
+	}
+
 	constructor(private signalingService: SignalingService) {
 		this.signalingService.handleMessage(this.handleSSMsg);
 	}
 
-	public initCall(audioStream: MediaStream, videoStream: MediaStream) {
-		this.createOffer(audioStream, videoStream);
+	public initCall() {
+		this.createOffer();
 	}
 
-	private async createOffer(audioStream: MediaStream, videoStream: MediaStream) {
-		// extract the tracks
-		const audioTrack: MediaStreamTrack = audioStream.getAudioTracks()[0];
-		const videoTrack: MediaStreamTrack = videoStream.getVideoTracks()[0];
+	private async createOffer() {
+		this.createPeerConnection();
+		// create the offer configuration and set it to local description as well
+		let offer = await this.peerConnection.createOffer();
+		await this.peerConnection.setLocalDescription(offer);
+		console.debug('Offer: ', offer);
+		this.signalingService.sendMessage({ type: SocketEvents.OFFER, offer });
+	}
 
+	private async createAnswer(offer: RTCSessionDescriptionInit) {
+		this.createPeerConnection();
+		await this.peerConnection.setRemoteDescription(offer);
+		const answer = await this.peerConnection.createAnswer();
+		this.peerConnection.setLocalDescription(answer);
+		this.signalingService.sendMessage({ type: SocketEvents.ANSWER, answer: answer });
+	}
+
+	private handleAnswer(answer: RTCSessionDescriptionInit) {
+		if (!this.peerConnection.currentRemoteDescription) {
+			this.peerConnection.setRemoteDescription(answer);
+		}
+	}
+
+	private handleIceCandidate(candidate: RTCIceCandidate) {
+		if (this.peerConnection) {
+			this.peerConnection.addIceCandidate(candidate);
+		}
+	}
+
+	private createPeerConnection() {
+		// extract the tracks
+		const audioTrack: MediaStreamTrack = this.audioStream.getAudioTracks()[0];
+		const videoTrack: MediaStreamTrack = this.videoStream.getVideoTracks()[0];
 		// create the peer connection
 		this.peerConnection = new RTCPeerConnection(this.servers);
 
 		// set tracks to peer connection
-		if (audioStream && audioTrack) {
+		if (this.audioStream && audioTrack) {
 			console.debug('Adding audio track to peer connection: ', audioTrack);
-			this.peerConnection.addTrack(audioTrack, audioStream);
+			this.peerConnection.addTrack(audioTrack, this.audioStream);
 		}
-		if (videoStream && videoTrack) {
+		if (this.videoStream && videoTrack) {
 			console.debug('Adding video track to peer connection: ', videoTrack);
-			this.peerConnection.addTrack(videoTrack, videoStream);
+			this.peerConnection.addTrack(videoTrack, this.videoStream);
 		}
 
 		// handle the tracks recieved on the connection
@@ -62,15 +101,9 @@ export class CallService {
 				this.signalingService.sendMessage({ type: SocketEvents.CANDIDATE, iceCandidate: event.candidate });
 			}
 		};
-
-		// create the offer configuration and set it to local description as well
-		let offer: RTCLocalSessionDescriptionInit = await this.peerConnection.createOffer();
-		await this.peerConnection.setLocalDescription(offer);
-		console.debug('Offer: ', offer);
-		this.signalingService.sendMessage({ type: SocketEvents.OFFER, offer });
 	}
 
-	handleSSMsg = (event: MessageEvent) => {
+	private handleSSMsg = (event: MessageEvent) => {
 		console.debug('Event received from signaling server', event);
 		if (event) {
 			try {
@@ -79,12 +112,21 @@ export class CallService {
 				switch (data.type) {
 					case SocketEvents.CANDIDATE:
 						console.debug('candidate event: ', data.iceCandidate);
+						if (data.iceCandidate) {
+							this.handleIceCandidate(data.iceCandidate);
+						}
 						break;
 					case SocketEvents.OFFER:
 						console.debug('offer event: ', data.offer);
+						if (data.offer) {
+							this.createAnswer(data.offer as RTCSessionDescriptionInit);
+						}
 						break;
 					case SocketEvents.ANSWER:
 						console.debug('answer event: ', data.answer);
+						if (data.answer) {
+							this.handleAnswer(data.answer as RTCSessionDescriptionInit);
+						}
 						break;
 					default:
 						break;

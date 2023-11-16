@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CallService } from 'src/app/services/call.service';
 
 @Component({
@@ -14,16 +14,21 @@ export class PlayerComponent implements OnInit {
 
 	ngOnInit(): void {}
 	initCall() {
-		if (this.localVideoStream && this.localAudioStream)
-			this.callService.initCall(this.localAudioStream, this.localVideoStream);
+		if (this.localVideoStream && this.localAudioStream) {
+			this.callService.localAudioStream = this.localAudioStream;
+			this.callService.localVideoStream = this.localVideoStream;
+			this.callService.initCall();
+		}
 	}
 
-	handleLocalVideoStream(event: MediaStream | null) {
+	handleLocalVideoStream(event: MediaStream) {
 		this.localVideoStream = event;
+		this.callService.localVideoStream = this.localVideoStream;
 	}
 
-	handleLocalAudioStream(event: MediaStream | null) {
+	handleLocalAudioStream(event: MediaStream) {
 		this.localAudioStream = event;
+		this.callService.localAudioStream = this.localAudioStream;
 	}
 
 	get initButtonTitle(): string {
