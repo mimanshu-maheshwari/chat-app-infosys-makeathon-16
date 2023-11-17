@@ -72,7 +72,7 @@ export class CallService {
 		// create the offer configuration and set it to local description as well
 		let offer = await this.peerConnection.createOffer();
 		await this.peerConnection.setLocalDescription(offer);
-		console.debug('Offer: ', offer);
+		console.debug('Create and send Offer: ', offer);
 		this.signalingService.sendMessage({ type: SocketEvents.OFFER, offer });
 	}
 
@@ -130,7 +130,7 @@ export class CallService {
 		// create get ice candidates from stun server
 		this.peerConnection.onicecandidate = (event) => {
 			if (event.candidate) {
-				console.debug('New Ice Candidate: ', event.candidate);
+				console.debug('Sending Ice Candidate: ', event.candidate);
 				this.signalingService.sendMessage({ type: SocketEvents.CANDIDATE, iceCandidate: event.candidate });
 			}
 		};

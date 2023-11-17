@@ -2,7 +2,6 @@ package com.signaling.server.handler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -19,8 +18,7 @@ public class SocketHandler extends AbstractWebSocketHandler {
   List<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
 
   @Override
-  public void handleTextMessage(WebSocketSession session, TextMessage message)
-    throws InterruptedException, IOException {
+  public void handleTextMessage(WebSocketSession session, TextMessage message) throws InterruptedException, IOException {
     log.info("For session {} message received is: {}.", session.getId(), message.getPayload());
     for (WebSocketSession webSocketSession : sessions) {
       if (webSocketSession.isOpen() && !session.getId().equals(webSocketSession.getId())) {
@@ -41,7 +39,7 @@ public class SocketHandler extends AbstractWebSocketHandler {
   }
 
   @Override
-  public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception{
+  public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
     sessions.remove(session);
     log.info("For session {} connection closed.", session.getId());
     for (WebSocketSession webSocketSession : sessions) {
