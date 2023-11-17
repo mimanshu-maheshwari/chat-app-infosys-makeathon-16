@@ -37,14 +37,12 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 				navigator.mediaDevices.getUserMedia({ video: true }).then((value) => {
 					this.videoSourceObject = value;
 					this.callService.localVideoStreamSubject.next(this.videoSourceObject);
-					// this.sendLocalVideoStream.emit(this.videoSourceObject);
 				});
 			}
 			if (!this.audioSourceObject) {
 				navigator.mediaDevices.getUserMedia({ audio: true }).then((value) => {
 					this.audioSourceObject = value;
 					this.callService.localAudioStreamSubject.next(this.audioSourceObject);
-					// this.sendLocalAudioStream.emit(this.audioSourceObject);
 				});
 			}
 		}
@@ -80,7 +78,6 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 				this.videoEl.nativeElement.srcObject = this.videoSourceObject;
 
 				this.callService.localVideoStreamSubject.next(this.videoSourceObject);
-				// this.sendLocalVideoStream.emit(this.videoSourceObject);
 			}
 		}
 	}
@@ -93,7 +90,6 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 					: this.audioSourceObject;
 				this.audioEl.nativeElement.srcObject = this.audioSourceObject;
 				this.callService.localAudioStreamSubject.next(this.audioSourceObject);
-				// this.sendLocalAudioStream.emit(this.audioSourceObject);
 			}
 		}
 	}
@@ -101,7 +97,7 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 	pauseVideo() {
 		if (this.videoEl) {
 			this.videoEl.nativeElement.pause();
-			// (this.videoEl.nativeElement.srcObject as MediaStream).getVideoTracks()[0].stop();
+			(this.videoEl.nativeElement.srcObject as MediaStream).getVideoTracks()[0].stop();
 			this.videoEl.nativeElement.srcObject = null;
 			if (!this.isLocal) {
 				this.videoSourceObject = null;
@@ -112,8 +108,8 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 	pauseAudio() {
 		if (this.audioEl) {
 			this.audioEl.nativeElement.pause();
-			// (this.audioEl.nativeElement.srcObject as MediaStream).getAudioTracks()[0].stop();
-			this.audioEl.nativeElement.srcObject = null;
+			(this.audioEl.nativeElement.srcObject as MediaStream).getAudioTracks()[0].stop();
+			// this.audioEl.nativeElement.srcObject = null;
 			if (!this.isLocal) {
 				this.audioSourceObject = null;
 			}
