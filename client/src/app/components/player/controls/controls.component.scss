@@ -1,12 +1,11 @@
 .controls-wrapper {
 	display: flex;
-	grid-gap: 2em;
 	gap: 2em;
 	flex-wrap: nowrap;
 	justify-content: center;
 	align-content: center;
 	align-items: center;
-	color: rgba(245, 245, 245, 0.197);
+	width: 100%;
 }
 
 .control {
@@ -19,6 +18,7 @@
 	height: 2em;
 	border-radius: 50%;
 	box-sizing: content-box;
+	box-shadow: inset 0px -18px 20px 0px #150d00a8;
 }
 .disable {
 	border: solid 2px rgba(216, 66, 66, 0.648);
@@ -29,4 +29,8 @@
 	border: solid 2px green;
 	// background-color: rgba(255, 255, 255, 0.208);
 	color: green;
+}
+.endcall {
+	background-color: red;
+	color: white;
 }

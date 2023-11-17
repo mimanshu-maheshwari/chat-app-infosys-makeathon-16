@@ -4,6 +4,7 @@
 	<app-controls
 		*ngIf="isLocal"
 		class="controls"
-		(mic-toggle-emmiter)="handleMicToggle($event)"
-		(video-toggle-emmiter)="handleVideoToggle($event)"></app-controls>
+		(mic-toggle-emmitter)="handleMicToggle($event)"
+		(end-call-emitter)="handleEndCall()"
+		(video-toggle-emmitter)="handleVideoToggle($event)"></app-controls>
 </div>

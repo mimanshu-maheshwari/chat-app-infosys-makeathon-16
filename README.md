@@ -1,5 +1,13 @@
 # chat-app-infosys-makeathon-16
 
+## Tasks: 
+- [] Make the rooms using stomp 
+  - [] Implement STOMP in signaling server. 
+  - [] Use SockJS to connect with server in chat app
+  - [] Implement dynamic rooms in front end. 
+- [] Mic, Camera and end call Control
+  - [] 
+
 ## TODO: 
 * Use STOMP instead of WebSocket so that we can create rooms. 
 * Handle multiple users using those rooms.
@@ -21,3 +29,5 @@
 - https://youtube.com/playlist?list=PLayYqdnyegt0qX8EfEGExxZF3DxkyA1Dj&si=C52W_JQVbDkRIkur
 - https://stackblitz.com/edit/angular-user-media-video?file=src%2Fapp%2Fapp.component.ts
 - https://gist.github.com/zziuni/3741933
+
+

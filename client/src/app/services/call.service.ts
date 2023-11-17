@@ -3,7 +3,7 @@ import { Subject } from 'rxjs';
 import { SignalingService } from './signaling.service';
 import { SocketEvents } from '../shared/socket-event.enum';
 import { ISocketEvent } from '../shared/socket-event.model';
-import { sortAndDeduplicateDiagnostics } from 'typescript';
+import { CallStatus } from '../shared/call-status.enum';
 
 @Injectable({
 	providedIn: 'root'
@@ -18,6 +18,7 @@ export class CallService {
 	private peerConnection!: RTCPeerConnection;
 
 	public remoteTracksSubject: Subject<{ tracks: Array<MediaStreamTrack> }> = new Subject();
+	public callStatus: Subject<CallStatus> = new Subject();
 
 	// TODO: create stun server
 	private servers: RTCConfiguration = {
@@ -48,6 +49,11 @@ export class CallService {
 		});
 	}
 
+	public disconnect() {
+		this.handleUserLeft();
+		this.createOffer();
+	}
+
 	// instead of initCall when the second user joined then create the offer
 	public initCall() {
 		this.createOffer();
@@ -58,6 +64,7 @@ export class CallService {
 	}
 	private handleUserLeft() {
 		this.remoteTracksSubject.next({ tracks: [] });
+		this.callStatus.next(CallStatus.CALLENDED);
 	}
 
 	private async createOffer() {
@@ -117,6 +124,7 @@ export class CallService {
 		this.peerConnection.ontrack = (event) => {
 			// sending the tracks to remote stream
 			this.remoteTracksSubject.next({ tracks: event.streams[0].getTracks() });
+			this.callStatus.next(CallStatus.INCALL);
 		};
 
 		// create get ice candidates from stun server
@@ -133,30 +141,34 @@ export class CallService {
 		if (event) {
 			try {
 				const data: ISocketEvent = JSON.parse(event.data);
-				// console.debug('Parsed data: ', data);
 				switch (data.type) {
+					// when ice candidates are received
 					case SocketEvents.CANDIDATE:
 						console.debug('candidate event: ', data.iceCandidate);
 						if (data.iceCandidate) {
 							this.handleIceCandidate(data.iceCandidate);
 						}
 						break;
+					// when offer is received
 					case SocketEvents.OFFER:
 						console.debug('offer event: ', data.offer);
 						if (data.offer) {
 							this.handleOffer(data.offer as RTCSessionDescriptionInit);
 						}
 						break;
+					// when answer is received
 					case SocketEvents.ANSWER:
 						console.debug('answer event: ', data.answer);
 						if (data.answer) {
 							this.handleAnswer(data.answer as RTCSessionDescriptionInit);
 						}
 						break;
+					// when user has joined
 					case SocketEvents.USER_JOINED:
 						console.debug('user joined event: ', data);
 						this.handleUserJoined();
 						break;
+					// when user has left
 					case SocketEvents.USER_LEFT:
 						console.debug('user left event: ', data);
 						this.handleUserLeft();

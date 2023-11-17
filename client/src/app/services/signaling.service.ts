@@ -14,11 +14,9 @@ export class SignalingService {
 
 	public sendMessage(message: ISocketEvent) {
 		this.signalingSocket.send(JSON.stringify(message));
-		// this.messageWebSocketCon.next({ message: message });
 	}
 
 	public handleMessage(callback: (message: MessageEvent) => void) {
-		// return this.messageWebSocketCon;
 		this.signalingSocket.onmessage = callback;
 	}
 }

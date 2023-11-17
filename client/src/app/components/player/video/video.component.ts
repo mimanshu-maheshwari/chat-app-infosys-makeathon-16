@@ -24,8 +24,7 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 	@ViewChild('videoEl') videoEl!: ElementRef<HTMLVideoElement>;
 	@ViewChild('audioEl') audioEl!: ElementRef<HTMLAudioElement>;
 	@Input('is-local') isLocal: boolean = false;
-	// @Output('send-local-video-stream') sendLocalVideoStream: EventEmitter<MediaStream> = new EventEmitter<MediaStream>();
-	// @Output('send-local-audio-stream') sendLocalAudioStream: EventEmitter<MediaStream> = new EventEmitter<MediaStream>();
+
 	videoSourceObject: MediaStream | null = null;
 	audioSourceObject: MediaStream | null = null;
 	unsubscribeAll: Subject<void>;
@@ -155,6 +154,10 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 		} else {
 			this.pauseAudio();
 		}
+	}
+
+	handleEndCall() {
+		this.callService.disconnect();
 	}
 
 	ngOnDestroy(): void {

@@ -5,4 +5,7 @@
 	<div class="control mic" [class]="micState ? 'enable' : 'disable'" (click)="toggleMic()">
 		<fa-icon [icon]="micIcon"></fa-icon>
 	</div>
+	<div *ngIf="callStatus" class="control endcall" (click)="endCall()">
+		<fa-icon [icon]="phoneIcon"></fa-icon>
+	</div>
 </div>
