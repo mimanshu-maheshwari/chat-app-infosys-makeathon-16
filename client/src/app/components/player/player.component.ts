@@ -12,7 +12,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 	localAudioStream!: MediaStream;
 	localVideoStream!: MediaStream;
 	unsubscribeAll: Subject<void> = new Subject<void>();
-	senderId: string = 'sender_';
+	senderId: string = '';
 
 	constructor(private callService: CallService, private signalingService: SignalingService) {}
 	ngOnDestroy(): void {
@@ -40,7 +40,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
 	get initButtonTitle(): string {
 		let message = 'Initiate call';
-		if (!this.localAudioStream || !this.localVideoStream) {
+		if (!this.localAudioStream || !this.localVideoStream || !this.senderId) {
 			message = '';
 			if (!this.localAudioStream) {
 				message += 'Audio permission required';
@@ -48,6 +48,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
 			if (!this.localVideoStream) {
 				if (message.length) message += '\n';
 				message += 'Video permission required';
+			}
+			if (!this.senderId) {
+				if (message.length) message += '\n';
+				message += 'Add sender Id';
 			}
 		}
 		return message;

@@ -8,7 +8,7 @@
 </div>
 <div [title]="initButtonTitle">
 	<input [(ngModel)]="senderId" (ngModelChange)="updateSenderId($event)" class="input form-control" />
-	<button class="btn btn-primary" [disabled]="!localAudioStream || !localVideoStream" (click)="initCall()">
+	<button class="btn btn-primary" [disabled]="!localAudioStream || !localVideoStream || !senderId" (click)="initCall()">
 		Init Call
 	</button>
 </div>

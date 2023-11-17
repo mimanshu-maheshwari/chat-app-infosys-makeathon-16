@@ -97,11 +97,11 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 	pauseVideo() {
 		if (this.videoEl) {
 			this.videoEl.nativeElement.pause();
-			(this.videoEl.nativeElement.srcObject as MediaStream).getVideoTracks()[0].stop();
-			this.videoEl.nativeElement.srcObject = null;
-			if (!this.isLocal) {
-				this.videoSourceObject = null;
-			}
+			// (this.videoEl.nativeElement.srcObject as MediaStream).getVideoTracks()[0].stop();
+			// this.videoEl.nativeElement.srcObject = null;
+			// if (!this.isLocal) {
+			// 	this.videoSourceObject = null;
+			// }
 		}
 	}
 
@@ -110,9 +110,9 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 			this.audioEl.nativeElement.pause();
 			(this.audioEl.nativeElement.srcObject as MediaStream).getAudioTracks()[0].stop();
 			// this.audioEl.nativeElement.srcObject = null;
-			if (!this.isLocal) {
-				this.audioSourceObject = null;
-			}
+			// if (!this.isLocal) {
+			// 	this.audioSourceObject = null;
+			// }
 		}
 	}
 

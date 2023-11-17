@@ -22,7 +22,7 @@ export class CallService {
 	public callStatus: Subject<CallStatus> = new Subject();
 
 	room: string = 'room';
-	sender: string = 'sender_';
+	sender: string = '';
 
 	// TODO: create stun server
 	private servers: RTCConfiguration = {
@@ -185,12 +185,12 @@ export class CallService {
 						}
 						break;
 					// when user has joined
-					case SocketEvents.USER_JOINED:
+					case SocketEvents.USER_CONNECTED:
 						console.debug('user joined event: ', data);
 						this.handleUserJoined();
 						break;
 					// when user has left
-					case SocketEvents.USER_LEFT:
+					case SocketEvents.USER_DISCONNECTED:
 						console.debug('user left event: ', data);
 						this.handleUserLeft();
 						break;
