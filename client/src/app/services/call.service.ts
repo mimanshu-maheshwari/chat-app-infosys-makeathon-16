@@ -4,6 +4,7 @@ import { SignalingService } from './signaling.service';
 import { SocketEvents } from '../shared/socket-event.enum';
 import { ISocketEvent } from '../shared/socket-event.model';
 import { CallStatus } from '../shared/call-status.enum';
+import { IMessage } from '@stomp/stompjs/esm6';
 
 @Injectable({
 	providedIn: 'root'
@@ -19,6 +20,9 @@ export class CallService {
 
 	public remoteTracksSubject: Subject<{ tracks: Array<MediaStreamTrack> }> = new Subject();
 	public callStatus: Subject<CallStatus> = new Subject();
+
+	room: string = 'room';
+	sender: string = 'sender_';
 
 	// TODO: create stun server
 	private servers: RTCConfiguration = {
@@ -36,7 +40,19 @@ export class CallService {
 	};
 
 	constructor(private signalingService: SignalingService) {
-		this.signalingService.handleMessage(this.handleSSMsg);
+		// this.signalingService.handleMessage(this.handleSSMsg);
+		// tslint:disable-next-line:only-arrow-functions
+		this.signalingService.stompClient.connect({}, (frame: any) => {
+			this.signalingService.stompClient.subscribe(`/receive/${this.room}`, this.handleSSMsg);
+		});
+
+		this.signalingService.senderSubject.subscribe({
+			next: (value) => (this.sender = value)
+		});
+
+		this.signalingService.roomSubject.subscribe({
+			next: (value) => (this.room = value)
+		});
 		this.localAudioStreamSubject.subscribe({
 			next: (stream) => {
 				this.audioStream = stream;
@@ -73,7 +89,7 @@ export class CallService {
 		let offer = await this.peerConnection.createOffer();
 		await this.peerConnection.setLocalDescription(offer);
 		console.debug('Create and send Offer: ', offer);
-		this.signalingService.sendMessage({ type: SocketEvents.OFFER, offer });
+		this.signalingService.sendMessage({ senderId: this.sender, type: SocketEvents.OFFER, offer });
 	}
 
 	/**
@@ -87,7 +103,7 @@ export class CallService {
 			await this.peerConnection.setRemoteDescription(offer);
 			const answer = await this.peerConnection.createAnswer();
 			this.peerConnection.setLocalDescription(answer);
-			this.signalingService.sendMessage({ type: SocketEvents.ANSWER, answer: answer });
+			this.signalingService.sendMessage({ senderId: this.sender, type: SocketEvents.ANSWER, answer: answer });
 		}
 	}
 
@@ -131,16 +147,21 @@ export class CallService {
 		this.peerConnection.onicecandidate = (event) => {
 			if (event.candidate) {
 				console.debug('Sending Ice Candidate: ', event.candidate);
-				this.signalingService.sendMessage({ type: SocketEvents.CANDIDATE, iceCandidate: event.candidate });
+				this.signalingService.sendMessage({
+					senderId: this.sender,
+					type: SocketEvents.CANDIDATE,
+					iceCandidate: event.candidate
+				});
 			}
 		};
 	}
 
-	private handleSSMsg = (event: MessageEvent) => {
+	private handleSSMsg = (event: IMessage) => {
 		console.debug('Event received from signaling server', event);
-		if (event) {
+		if (event.body) {
 			try {
-				const data: ISocketEvent = JSON.parse(event.data);
+				const data: ISocketEvent = JSON.parse(event.body);
+				if (data.senderId.toLocaleLowerCase() == this.sender.toLocaleLowerCase()) return;
 				switch (data.type) {
 					// when ice candidates are received
 					case SocketEvents.CANDIDATE:
@@ -174,6 +195,7 @@ export class CallService {
 						this.handleUserLeft();
 						break;
 					default:
+						console.debug('Some other message came in signaling server:', data);
 						break;
 				}
 			} catch (e) {

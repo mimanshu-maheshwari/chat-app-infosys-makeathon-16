@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import { CallService } from 'src/app/services/call.service';
+import { SignalingService } from 'src/app/services/signaling.service';
 
 @Component({
 	selector: 'app-player',
@@ -11,10 +12,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
 	localAudioStream!: MediaStream;
 	localVideoStream!: MediaStream;
 	unsubscribeAll: Subject<void> = new Subject<void>();
+	senderId: string = 'sender_';
 
-	constructor(private callService: CallService) {}
+	constructor(private callService: CallService, private signalingService: SignalingService) {}
 	ngOnDestroy(): void {
 		this.unsubscribeAll.next();
+	}
+
+	updateSenderId(value: string) {
+		this.senderId = value;
+		this.signalingService.senderSubject.next(value);
 	}
 
 	ngOnInit(): void {
@@ -30,16 +37,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
 			this.callService.initCall();
 		}
 	}
-
-	// handleLocalVideoStream(event: MediaStream) {
-	// 	this.localVideoStream = event;
-	// 	this.callService.localVideoStream = this.localVideoStream;
-	// }
-
-	// handleLocalAudioStream(event: MediaStream) {
-	// 	this.localAudioStream = event;
-	// 	this.callService.localAudioStream = this.localAudioStream;
-	// }
 
 	get initButtonTitle(): string {
 		let message = 'Initiate call';
