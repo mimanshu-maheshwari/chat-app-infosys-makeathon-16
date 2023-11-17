@@ -32,7 +32,7 @@
 - https://stomp-js.github.io/guide/stompjs/rx-stomp/using-stomp-with-sockjs.html
 - https://spring.io/guides/gs/messaging-stomp-websocket/
 - https://haseeamarathunga.medium.com/create-a-spring-boot-angular-websocket-using-sockjs-and-stomp-cb339f766a98
-
+- https://janus.conf.meetecho.com
 
 
 
