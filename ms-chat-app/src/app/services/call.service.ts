@@ -36,7 +36,7 @@ export class CallService {
     this.mediaSoupDevice = new mediaSoupClient.Device({});
 
     //subscribe to stomp client to receive events.
-    this.stompClient.subscribe(environment.wsReceiveUrl, this.handleStompEvents);
+    this.stompClient.subscribe(encodeURIComponent(environment.wsReceiveUrl), this.handleStompEvents);
   }
   /**
    * handle events for stomp clients

@@ -43,12 +43,16 @@ export class SignalingService {
     if (this.stompClient && this.stompClient.active) {
       message = { ...message, userId: this.userId };
       console.debug('Signaling Service::sendMessage::message', message);
-      // this.stompClient.send(environment.wsSendUrl, { 'content-type': 'application/json' }, message);
-      this.stompClient.publish({
-        destination: `${environment.wsSendUrl}`,
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(message)
-      });
+      this.stompClient.send(
+        encodeURIComponent(environment.wsSendUrl),
+        { 'content-type': 'application/json' },
+        JSON.stringify(message)
+      );
+      //   this.stompClient.publish({
+      //     destination: encodeURIComponent(`${environment.wsSendUrl}`),
+      //     headers: { 'content-type': 'application/json' },
+      //     body: JSON.stringify(message)
+      //   });
     }
   }
 }
