@@ -1,0 +1,32 @@
+<table class="table">
+	<tr class="">
+		<td>
+			<div>
+				<video #localVideo autoplay controls playsinline style="height: 400px; width: 400px" class="video"></video>
+				<!-- <audio #localAudio autoplay controls playsinline style="width: 400px" class="audio"></audio> -->
+				<p>Local</p>
+				<tr>
+					<td><button (click)="showLocalVideo()">Show local video</button></td>
+					<td><button (click)="pauseLocalVideo()">Pause local video</button></td>
+					<td><button (click)="resumeLocalVideo()">Resume local video</button></td>
+					<!-- <td><button (click)="showLocalAudio()">Show remote audio</button></td> -->
+					<td><button (click)="pauseLocalAudio()">Pause local audio</button></td>
+					<td><button (click)="resumeLocalAudio()">Resume local audio</button></td>
+				</tr>
+			</div>
+		</td>
+		<td>
+			<div>
+				<video #remoteVideo autoplay controls playsinline style="height: 400px; width: 400px" class="video"></video>
+				<audio #remoteAudio autoplay controls playsinline style="width: 400px" class="audio"></audio>
+				<p>Remote</p>
+				<tr>
+					<td><button (click)="showRemoteVideo()">Show remote video</button></td>
+					<td><button (click)="showRemoteAudio()">Show remote audio</button></td>
+					<!-- <td><button (click)="pauseRemoteAudio()">Pause local audio</button></td>
+					<td><button (click)="resumeRemoteAudio()">Resume local audio</button></td> -->
+				</tr>
+			</div>
+		</td>
+	</tr>
+</table>

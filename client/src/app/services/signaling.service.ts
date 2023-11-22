@@ -34,6 +34,10 @@ export class SignalingService {
 
 	public sendMessage(message: ISocketEvent) {
 		console.log('sending message: ', JSON.stringify({ ...message, senderId: `${this.sender}` }));
-		this.stompClient.send(`/send/${this.room}`, { 'content-type': 'application/json' }, JSON.stringify(message));
+		this.stompClient.send(
+			`/send/${this.room}`,
+			{ 'content-type': 'application/json' },
+			JSON.stringify({ ...message, senderId: `${this.sender}` })
+		);
 	}
 }

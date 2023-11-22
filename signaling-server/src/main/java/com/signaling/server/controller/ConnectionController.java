@@ -18,10 +18,17 @@ public class ConnectionController {
   @Autowired
   private ConnectionService connectionService;
 
-  @MessageMapping("/send/{room}")
-  @SendTo("/receive/{room}")
-  public SocketEventDTO receiveEvent(@DestinationVariable("room") String room, SocketEventDTO requestEvent) {
-    return this.connectionService.handleConnectionEvent(room, requestEvent);
+//  @MessageMapping("/send/{room}")
+//  @SendTo("/receive/{room}")
+//  public SocketEventDTO receiveEvent(@DestinationVariable("room") String room, SocketEventDTO requestEvent) {
+//    return this.connectionService.handleConnectionEvent(room, requestEvent);
+//  }
+
+  @MessageMapping("/send")
+  @SendTo("/receive")
+  public Object mediaSoupEvent(Object requestEvent) {
+    log.info("Event Received: {}", requestEvent);
+    return requestEvent;
   }
 
 }
