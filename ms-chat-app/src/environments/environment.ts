@@ -3,10 +3,10 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-	production: false,
-	wsUrl: 'http://localhost:8080/socket',
-	wsSendUrl: 'http://localhost:8080/send',
-	wsReceiveUrl: 'http://localhost:8080/receive'
+  production: false,
+  wsUrl: 'http://localhost:8080/socket',
+  wsSendUrl: 'http://localhost:8080/send',
+  wsReceiveUrl: 'http://localhost:8080/receive'
 };
 
 /*
